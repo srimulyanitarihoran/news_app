@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:get/get.dart';
 import 'package:news_app/models/news_response.dart';
 import 'package:news_app/utils/constants.dart';
 // mendefinisikan sebuah packahge atau library menjadi sebuah variable secara langsung
