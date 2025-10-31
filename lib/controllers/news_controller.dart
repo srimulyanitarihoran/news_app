@@ -4,29 +4,46 @@ import 'package:news_app/services/news_service.dart';
 import 'package:news_app/utils/constants.dart';
 
 class NewsController extends GetxController {
-  // untuk memproses request yang sudah dibuat oleh news services
   final NewsService _newsService = NewsService();
 
-  //setter -> buay nge set
-  // observable variables atau variable yang bisa berubah
-  final _isLoading = false.obs; // apakah aplikasi sedang memuat berita
-  final _articles = <NewsArticles>[].obs; // ini untuk menampilkan daftar berita yang sudah atau berhasil didpat
-  final _selectedCategory = 'general'.obs;  // untuk handle kategory yang dipilih
-  final _error = ''.obs; // kalau ada keasalahn bakal disimpan disini
+  // ⏳ loading indicator (buat nampilin loading pas fetch)
+  final _isLoading = false.obs;
 
-  //Getters -> buat dapetin
-  // ini seperti jendela untuk melihat isi variable yang sudah di definisikan, dengan ini UI bisa dnegan mudah melihat data dari controller
+  // 📰 semua berita yang lagi ditampilin di home/search
+  final _articles = <NewsArticles>[].obs;
+
+  // 🔔 notifikasi (berita terbaru)
+  final _notifications = <NewsArticles>[].obs;
+
+  // 📂 kategori berita (default = general)
+  final _selectedCategory = 'general'.obs;
+
+  // ❌ pesan error kalo API gagal
+  final _error = ''.obs;
+
+  // 🔘 buat navbar bawah
+  var selectedIndex = 0.obs;
+
+  void onNavTapped(int index) {
+    selectedIndex.value = index;
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchTopHeadLines(); // ambil berita pas pertama kali dibuka
+  }
+
+  // getter biar gampang dipanggil dari UI
   bool get isLoading => _isLoading.value;
   List<NewsArticles> get articles => _articles;
+  List<NewsArticles> get notifications => _notifications;
   String get selectedCategory => _selectedCategory.value;
   String get error => _error.value;
   List<String> get categories => Constants.categories;
 
-  // begitu aplikasi dibuka, aplikasi langsung menampilkan berita utama dari endpoint topheadlines
-  //TODO: fetching data dari endpoint top-headlines
-
+  // ✅ ambil berita utama dari API (top-headlines)
   Future<void> fetchTopHeadLines({String? category}) async {
-    // blok ini akan dijalankan ketika rest api berhasil berkomunikasi dengan server
     try {
       _isLoading.value = true;
       _error.value = '';
@@ -35,31 +52,38 @@ class NewsController extends GetxController {
         category: category ?? _selectedCategory.value,
       );
 
-      _articles.value = response.articles;
+      _articles.assignAll(response.articles);
     } catch (e) {
-      _error.value = e.toString();
-      Get.snackbar(
-        'Error',
-        'Failed to news: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM
-      );
+      // kalo error, langsung munculin snackbar
+      Future.delayed(Duration.zero, () {
+        _error.value = e.toString();
+        Get.snackbar(
+          'Error',
+          'Gagal ambil berita: ${e.toString()}',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      });
     } finally {
-      // finally akan di execute akan dijalnkan ketika salah satu dari blok try atau catch sudah selesai mendapatkan ahsil
       _isLoading.value = false;
     }
   }
 
+  // 🔁 buat refresh berita
   Future<void> refreshNews() async {
     await fetchTopHeadLines();
   }
 
+  // 🏷️ ganti kategori berita
   void selectCategory(String category) {
     if (_selectedCategory.value != category) {
       _selectedCategory.value = category;
-      fetchTopHeadLines(category: category);
+      Future.delayed(Duration.zero, () {
+        fetchTopHeadLines(category: category);
+      });
     }
   }
 
+  // 🔍 cari berita dari endpoint everything
   Future<void> searchNews(String query) async {
     if (query.isEmpty) return;
 
@@ -68,14 +92,35 @@ class NewsController extends GetxController {
       _error.value = '';
 
       final response = await _newsService.searchNews(query: query);
-      _articles.value = response.articles;
+      _articles.assignAll(response.articles);
+    } catch (e) {
+      Future.delayed(Duration.zero, () {
+        _error.value = e.toString();
+        Get.snackbar(
+          'Error',
+          'Gagal cari berita: ${e.toString()}',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      });
+    } finally {
+      _isLoading.value = false;
+    }
+  }
+
+  // 🔔 ambil data buat notifikasi (berita terbaru limit 5)
+  Future<void> fetchNotifications() async {
+    try {
+      _isLoading.value = true;
+      _error.value = '';
+
+      final response = await _newsService.getTopHeadLines(
+        category: 'general',
+      );
+
+      // ambil 5 berita terbaru aja
+      _notifications.assignAll(response.articles.take(5).toList());
     } catch (e) {
       _error.value = e.toString();
-      Get.snackbar(
-        'error',
-        'Failed to search news: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM
-      );
     } finally {
       _isLoading.value = false;
     }

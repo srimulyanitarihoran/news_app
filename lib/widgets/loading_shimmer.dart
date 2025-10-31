@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:news_app/utils/app_colors.dart';
 
 class LoadingShimmer extends StatefulWidget {
@@ -9,159 +8,119 @@ class LoadingShimmer extends StatefulWidget {
   State<LoadingShimmer> createState() => _LoadingShimmerState();
 }
 
-class _LoadingShimmerState extends State<LoadingShimmer> 
+class _LoadingShimmerState extends State<LoadingShimmer>
     with SingleTickerProviderStateMixin {
-      late AnimationController _animationController;
-      late Animation<double> _animation;
+  late AnimationController _animationController;
+  late Animation<double> _animation;
 
-      @override
-      initState() {
-        super.initState();
-        _animationController = AnimationController(
-          duration: Duration(milliseconds: 1500),
-          vsync: this,
-        )..repeat();
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
 
-        _animation = Tween<double>(
-          begin: -1.0,
-          end: 2.0
-        ).animate(CurvedAnimation(
-          parent: _animationController,
-          curve: Curves.easeInOut
-        ));
-      }
+    _animation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+  }
 
-      @override
-      void dispose() {
-        _animationController.dispose();
-        super.dispose();
-      }
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+
     return ListView.builder(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: 5,
       itemBuilder: (context, index) {
         return Card(
           margin: EdgeInsets.only(bottom: 16),
-          elevation: 2,
+          elevation: 3,
+          color: AppColors.background,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12)
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // untuk image shimmer
-              AnimatedBuilder(
-                animation: _animation,
-                builder: (context, child) {
-                  return Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                      gradient: LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: [
-                          AppColors.divider,
-                          AppColors.divider.withValues(alpha: 2.5),
-                          AppColors.divider
-                        ],
-                        stops: [
-                          0.0,
-                          0.5,
-                          1.0
-                        ],
-                        transform: GradientRotation(_animation.value * 3.14159)
-                      )
-                    ),
-                  );
-                },
+              ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+                child: AnimatedBuilder(
+                  animation: _animation,
+                  builder: (context, child) {
+                    return Container(
+                      height: 180,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment(-1, 0),
+                          end: Alignment(1, 0),
+                          colors: [
+                            AppColors.divider.withValues(alpha: 0.3),
+                            AppColors.divider.withValues(alpha: 0.1),
+                            AppColors.divider.withValues(alpha: 0.3),
+                          ],
+                          stops: [0.0, 0.5, 1.0],
+                          transform: GradientRotation(
+                            _animation.value * 3.14159,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-              
               Padding(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // source shimmer
-                    AnimatedBuilder(
-                      animation: _animation,
-                      builder: (context, child) {
-                        return Container(
-                          height: 12,
-                          width: 100,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            color: AppColors.divider
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(height: 12),
-
-                    // title shimmer
-                    AnimatedBuilder(
-                      animation: _animation,
-                      builder: (context, child) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 16,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: AppColors.divider,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Container(
-                              height: 16,
-                              width: MediaQuery.of(context).size.width * 0.7,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: AppColors.divider
-                              ),
-                            )
-                          ],
-                        );
-                      },
-                    ),
-                    SizedBox(height: 12),
-                    // description shimmer
-                    AnimatedBuilder(
-                      animation: _animation,
-                      builder: (context, child) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                            height: 14,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(7),
-                              color: AppColors.divider,
-                            ),
-                          ),
-                          SizedBox(height: 6),
-                          Container(
-                            height: 14,
-                            width: MediaQuery.of(context).size.width * 0.5,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(7),
-                              color: AppColors.divider,
-                            ),
-                          )
-                          ],
-                        );
-                      },
-                    )
+                    _buildShimmerLine(width: 80, height: 10),
+                    SizedBox(height: 10),
+                    _buildShimmerLine(width: screenWidth * 0.9, height: 16),
+                    SizedBox(height: 8),
+                    _buildShimmerLine(width: screenWidth * 0.7, height: 16),
+                    SizedBox(height: 10),
+                    _buildShimmerLine(width: screenWidth * 0.85, height: 14),
+                    SizedBox(height: 6),
+                    _buildShimmerLine(width: screenWidth * 0.5, height: 14),
                   ],
                 ),
-              )
+              ),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShimmerLine({required double width, required double height}) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            gradient: LinearGradient(
+              begin: Alignment(-1, 0),
+              end: Alignment(1, 0),
+              colors: [
+                AppColors.divider.withOpacity(0.3),
+                AppColors.divider.withOpacity(0.1),
+                AppColors.divider.withOpacity(0.3),
+              ],
+              stops: const [0.0, 0.5, 1.0],
+              transform: GradientRotation(_animation.value * 3.14159),
+            ),
           ),
         );
       },

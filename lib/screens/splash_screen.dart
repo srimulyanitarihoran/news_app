@@ -1,119 +1,114 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:news_app/routes/app_pages.dart';
 import 'package:news_app/utils/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> 
- with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  final List<String> letters = ["N", "e", "x", "N", "e", "w", "s"];
 
-  @override 
+  @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: Duration(seconds: 2),
-      vsync: this
-    );
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 3),
+    )..forward();
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticInOut,
-    ));
-
-    _animationController.forward();
-
-    // navigate to home screen after 3 second
-    Future.delayed(Duration(seconds: 3), () {
+    Future.delayed(Duration(seconds: 4), () {
       Get.offAllNamed(Routes.HOME);
     });
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _controller.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: Colors.transparent,
       body: Center(
         child: AnimatedBuilder(
-          animation: _animationController,
+          animation: _controller,
           builder: (context, child) {
-            return FadeTransition(
-              opacity: _fadeAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 20,
-                            offset: Offset(0, 10)
-                          )
-                        ]
-                      ),
-                      child: Icon(
-                        Icons.newspaper,
-                        size: 60,
-                        color: AppColors.primary,
-                      ),
+            double progress = Curves.easeOutCubic.transform(_controller.value);
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedOpacity(
+                  opacity: progress,
+                  duration: Duration(milliseconds: 800),
+                  child: Container(
+                    padding: EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 30),
-                    Text(
-                      'News App',
-                       style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 1.5,
-                      ),
+                    child: Icon(
+                      Icons.newspaper_rounded,
+                      color: AppColors.primary,
+                      size: 52,
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                       'Stay Updated with Latest News',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withValues( alpha: 0.8),
-                      ),
-                    ),
-                    SizedBox(height: 50),
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                SizedBox(height: 40),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(letters.length, (i) {
+                    final delay = i * 0.1;
+                    final localProgress =
+                        (progress - delay).clamp(0.0, 1.0);
+                    final opacity = localProgress;
+                    final offsetY = (1 - localProgress) * 30;
+                    return Opacity(
+                      opacity: opacity,
+                      child: Transform.translate(
+                        offset: Offset(0, offsetY),
+                        child: Text(
+                          letters[i],
+                          style: TextStyle(
+                            fontSize: 42,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+
+                SizedBox(height: 16),
+                AnimatedOpacity(
+                  opacity: progress > 0.8 ? 1 : 0,
+                  duration: Duration(milliseconds: 800),
+                  child: Text(
+                    "Next Gen News, Right Now.",
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: 16,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+              ],
             );
           },
         ),
