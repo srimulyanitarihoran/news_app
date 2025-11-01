@@ -9,7 +9,7 @@ String getCategoryImage(String category) {
     case 'technology':
       return 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=60';
     case 'health':
-      return 'https://images.unsplash.com/photo-1584467735871-bc179c8df2c2?auto=format&fit=crop&w=800&q=60';
+      return 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=800&q=60';
     case 'science':
       return 'https://images.unsplash.com/photo-1581091012184-5c1af19c44b0?auto=format&fit=crop&w=800&q=60';
     default:

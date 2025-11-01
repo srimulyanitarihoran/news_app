@@ -27,7 +27,7 @@ class DiscoverHeader extends StatelessWidget {
                 text: TextSpan(
                   style: TextStyle(
                     fontSize: 26,
-                    color: AppColors.textPrimary ?? Colors.black,
+                    color: AppColors.textPrimary,
                   ),
                   children: [
                     TextSpan(
@@ -71,7 +71,7 @@ class DiscoverHeader extends StatelessWidget {
                         hasNotification
                             ? Icons.notifications_active_rounded
                             : Icons.notifications_none_rounded,
-                        color: AppColors.textPrimary ?? Colors.black87,
+                        color: AppColors.textPrimary,
                         size: 28,
                       ),
                     ),

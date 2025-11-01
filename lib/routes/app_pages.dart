@@ -1,6 +1,5 @@
 // unduk
 // part -> sebuah keyword kalo misal dia adalh induk, bisa berdiri sendiri tanpa bantuan
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:news_app/bindings/home_bindings.dart';
 import 'package:news_app/screens/home_screen.dart';

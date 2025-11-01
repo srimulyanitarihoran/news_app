@@ -22,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen>
       duration: Duration(seconds: 3),
     )..forward();
 
+    // pindah ke home setelah animasi selesai
     Future.delayed(Duration(seconds: 4), () {
       Get.offAllNamed(Routes.HOME);
     });
@@ -33,6 +34,41 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
+  // animasi buat hurufnya
+  Widget _buildAnimatedLetter(String letter, int index) {
+    final start = index * 0.08;
+    final end = (start + 0.6).clamp(0.0, 1.0);
+    final curved = CurvedAnimation(
+      parent: _controller,
+      curve: Interval(start, end, curve: Curves.easeOutCubic),
+    );
+
+    return AnimatedBuilder(
+      animation: curved,
+      builder: (context, child) {
+        final value = curved.value;
+        final opacity = value.clamp(0.0, 1.0);
+        final offsetY = (1 - value) * 30;
+
+        return Opacity(
+          opacity: opacity,
+          child: Transform.translate(
+            offset: Offset(0, offsetY),
+            child: Text(
+              letter,
+              style: TextStyle(
+                fontSize: 42,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,10 +77,11 @@ class _SplashScreenState extends State<SplashScreen>
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            double progress = Curves.easeOutCubic.transform(_controller.value);
+            final progress = Curves.easeOutCubic.transform(_controller.value);
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // icon animasi fade-in
                 AnimatedOpacity(
                   opacity: progress,
                   duration: Duration(milliseconds: 800),
@@ -71,30 +108,11 @@ class _SplashScreenState extends State<SplashScreen>
                 SizedBox(height: 40),
                 Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: List.generate(letters.length, (i) {
-                    final delay = i * 0.1;
-                    final localProgress =
-                        (progress - delay).clamp(0.0, 1.0);
-                    final opacity = localProgress;
-                    final offsetY = (1 - localProgress) * 30;
-                    return Opacity(
-                      opacity: opacity,
-                      child: Transform.translate(
-                        offset: Offset(0, offsetY),
-                        child: Text(
-                          letters[i],
-                          style: TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
+                  children: List.generate(
+                    letters.length,
+                    (i) => _buildAnimatedLetter(letters[i], i),
+                  ),
                 ),
-
                 SizedBox(height: 16),
                 AnimatedOpacity(
                   opacity: progress > 0.8 ? 1 : 0,
